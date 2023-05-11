@@ -1,0 +1,10 @@
+Database first
+Kết nối với 1 db có sẵn: https://www.c-sharpcorner.com/article/build-asp-net-core-api-using-existing-database2/
+	Mở  nuget và cài các tool : SqlServer,Design,Tools,
+	- PM > Scaffold-DbContext "Server=LAPTOP-4N02CR39;Database=BOOKSTORE;Trusted_Connection=True; Trustservercertificate=true;" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -Context CoreDbContext -DataAnnotations -force
+	Link: https://medium.com/net-core/build-a-restful-web-api-with-asp-net-core-6-30747197e229
+	=> Có được folder model gồm : 
+		+ File chứa kiểu dữ liệu được chuyển từ DB sang
+		+ File DbContext
+	Tắt CORS:https://learn.microsoft.com/en-us/aspnet/core/security/cors?view=aspnetcore-7.0
+	Tạo 1 api controler(AC) mới vào folder controller
