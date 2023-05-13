@@ -86,7 +86,7 @@ const Products = ({ products, onAddToCart }) => {
             if (searchTerm === "") {
               return product;
             } else if (
-              product.nameb
+              product.name
                 .toLowerCase()
                 .includes(searchTerm.toLocaleLowerCase())
             ) {

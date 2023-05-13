@@ -1,34 +1,33 @@
-import React from 'react'
-import { Container, Grid, Button, Typography } from '@material-ui/core';
-import { Link } from 'react-router-dom';
-import { commerce } from '../../lib/commerce';
+import React from "react";
+import { Container, Grid, Button, Typography } from "@material-ui/core";
+import { Link } from "react-router-dom";
+import { commerce } from "../../lib/commerce";
 import { useState, useEffect } from "react";
-import './style.css'
+import "./style.css";
 import axios from "axios";
+import { formatter } from "../../lib/formatM";
 
 const createMarkup = (text) => {
   return { __html: text };
 };
 
 const ProductView = () => {
-
   const [product, setProduct] = useState({});
-  const [temp, setTemp] = useState({});
 
   const fetchProduct = async (id) => {
-    axios.get(`http://localhost:30766/api/Book/id?id=${id}`, {
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*"
-      }
-    })
-      .then(res => {
-        setProduct(res.data)
-        console.log(res.data)
+    axios
+      .get(`https://localhost:44348/api/Book/id?id=${id}`)
+      .then((res) => {
+        const { name, price, sourceimg, quantity, description } = res.data;
+        setProduct({
+          name,
+          quantity,
+          description,
+          src: sourceimg,
+          price: price,
+        });
       })
-      .catch(error => console.log(error));
-    // console.log({ response });
-    // const { name, price, media, quantity, description } = response;
+      .catch((error) => console.log(error));
   };
 
   useEffect(() => {
@@ -40,18 +39,29 @@ const ProductView = () => {
     <Container className="product-view">
       <Grid container>
         <Grid item xs={12} md={6} className="image-wrapper">
-          <img src={product.sourceimg} alt={product.nameb}
-          />
+          <img src={product.src} alt={product.name} />
         </Grid>
         <Grid item xs={12} md={5} className="text">
-          <Typography variant="h2"><b>{product.nameb}</b></Typography>
+          <Typography variant="h2">
+            <b>{product.name}</b>
+          </Typography>
           <hr />
-          <Typography variant="p" dangerouslySetInnerHTML={createMarkup(product.descr)} />
-          <Typography variant="h3" color="secondary" >Price: <b> {product.price} </b> </Typography>
+          <Typography
+            variant="p"
+            dangerouslySetInnerHTML={createMarkup(product.description)}
+          />
+          <Typography variant="h3" color="secondary">
+            Price: <b> {formatter.format(product.price)} </b>{" "}
+          </Typography>
           <br />
           <Grid container spacing={4}>
             <Grid item xs={12}>
-              <Button size="large" className="custom-button" component={Link} to='/' >
+              <Button
+                size="large"
+                className="custom-button"
+                component={Link}
+                to="/"
+              >
                 Continue Shopping
               </Button>
             </Grid>

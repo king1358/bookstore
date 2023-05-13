@@ -11,7 +11,7 @@ public class Book
     public string Id { get; set; } = null!;
 
 
-    public string? Nameb { get; set; }
+    public string? Name { get; set; }
 
    
     public double? Price { get; set; }
@@ -20,7 +20,7 @@ public class Book
     public string? Author { get; set; }
 
     
-    public string? Descr { get; set; }
+    public string? DESCRIPTION { get; set; }
 
     
     public string? Sourceimg { get; set; }
