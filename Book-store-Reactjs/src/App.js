@@ -16,7 +16,9 @@ import Login from "./components/Authentication/Login/login";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import jwt_decode from "jwt-decode";
-
+import { QueryClient, QueryClientProvider } from "react-query";
+import Register from "./components/Authentication/Register/register";
+import CheckoutTemp from "./components/CheckoutForm/checkoutTemp";
 const App = () => {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [products, setProducts] = useState([]);
@@ -24,39 +26,30 @@ const App = () => {
   const [order, setOrder] = useState({});
   const [errorMessage, setErrorMessage] = useState("");
   const [token, setToken] = useState("");
-  const fetchProducts = async () => {
-    axios
-      .get(`https://localhost:44348/api/Book`)
-      .then((res) => {
-        setProducts(res.data);
-      })
-      .catch((error) => console.log(error));
-  };
+  // const fetchProducts = async () => {
+  //   axios
+  //     .get(`https://localhost:44348/api/Book`)
+  //     .then((res) => {
+  //       setProducts(res.data);
+  //     })
+  //     .catch((error) => console.log(error));
+  // };
 
-  const fetchCart = async () => {
-    setCart(await commerce.cart.retrieve());
-  };
+  // const fetchCart = async (token) => {
+  //   let decode = jwt_decode(token);
+  //   axios
+  //     .get(`https://localhost:44348/api/Cart?id=${decode.id}`)
+  //     .then((res) => {
+  //       console.log("CART", res.data);
+  //       setCart(res.data);
+  //     })
+  //     .catch((error) => console.log(error));
+  //   // setCart(await commerce.cart.retrieve());
+  // };
 
   const loginToken = (result) => {
+    console.log(result);
     setToken(result);
-  };
-
-  const handleAddToCart = async (productId, quantity) => {
-    const item = await commerce.cart.add(productId, quantity);
-
-    setCart(item.cart);
-  };
-
-  const handleUpdateCartQty = async (lineItemId, quantity) => {
-    const response = await commerce.cart.update(lineItemId, { quantity });
-
-    setCart(response.cart);
-  };
-
-  const handleRemoveFromCart = async (lineItemId) => {
-    const response = await commerce.cart.remove(lineItemId);
-
-    setCart(response.cart);
   };
 
   const handleEmptyCart = async () => {
@@ -87,75 +80,63 @@ const App = () => {
   };
 
   useEffect(() => {
-    fetchProducts();
-    fetchCart();
-    if (token) alert("AAAAA");
+    // fetchProducts();
+    // fetchCart();
+    // if (token) alert("AAAAA");
   }, []);
 
-  useEffect(() => {
-    console.log("AAAB");
-  }, [token]);
-
   const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
+  const queryClient = new QueryClient();
 
   return (
-    <div>
-      <Router>
-        <div style={{ display: "flex" }}>
-          <CssBaseline />
-          <Navbar
-            totalItems={cart.total_items}
-            handleDrawerToggle={handleDrawerToggle}
-          />
-          <Routes>
-            <Route
-              exact
-              path="/"
-              element={
-                <Products
-                  products={products}
-                  onAddToCart={handleAddToCart}
-                  handleUpdateCartQty
-                />
-              }
+    <QueryClientProvider client={queryClient}>
+      <div>
+        <Router>
+          <div style={{ display: "flex" }}>
+            <CssBaseline />
+            <Navbar
+              totalItems={cart.total_items}
+              handleDrawerToggle={handleDrawerToggle}
             />
-            <Route
-              exact
-              path="/cart"
-              element={
-                <Cart
-                  cart={cart}
-                  onUpdateCartQty={handleUpdateCartQty}
-                  onRemoveFromCart={handleRemoveFromCart}
-                  onEmptyCart={handleEmptyCart}
-                />
-              }
-            />
-            <Route
-              path="/checkout"
-              exact
-              element={
-                <Checkout
-                  cart={cart}
-                  order={order}
-                  onCaptureCheckout={handleCaptureCheckout}
-                  error={errorMessage}
-                />
-              }
-            />
-            <Route path="/product-view/:id" exact element={<ProductView />} />
+            <Routes>
+              <Route
+                exact
+                path="/"
+                element={<Products handleUpdateCartQty />}
+              />
+              <Route
+                exact
+                path="/cart"
+                element={<Cart onEmptyCart={handleEmptyCart} />}
+              />
+              <Route
+                path="/checkout"
+                exact
+                element={
+                  <Checkout
+                    cart={cart}
+                    order={order}
+                    onCaptureCheckout={handleCaptureCheckout}
+                    error={errorMessage}
+                  />
+                }
+              />
+              <Route path="/product-view/:id" exact element={<ProductView />} />
 
-            <Route
-              path="/login"
-              exact
-              element={<Login loginToken={loginToken} />}
-            />
-          </Routes>
-          <ToastContainer />
-        </div>
-      </Router>
-      <Footer />
-    </div>
+              <Route
+                path="/login"
+                exact
+                element={<Login loginToken={loginToken} />}
+              />
+              <Route path="/register" exact element={<Register />} />
+              <Route path="/checkoutTemp" exact element={<CheckoutTemp />} />
+            </Routes>
+            <ToastContainer />
+          </div>
+        </Router>
+        <Footer />
+      </div>
+    </QueryClientProvider>
   );
 };
 

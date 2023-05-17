@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Grid, InputAdornment, Input, Button } from "@material-ui/core";
 import SearchIcon from "@material-ui/icons/Search";
 import Product from "./Product/Product.js";
@@ -9,14 +9,51 @@ import logo1 from "../../assets/2.jpeg";
 import logo2 from "../../assets/4.jpeg";
 import logo3 from "../../assets/3.jpeg";
 import { Link } from "react-router-dom";
+import { useQuery } from "react-query";
+import axios from "axios";
+import jwt_decode from "jwt-decode";
 
-const Products = ({ products, onAddToCart }) => {
+const Products = () => {
   const classes = useStyles();
-
+  const [refesh, setRefesh] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const products = useQuery(
+    ["products", refesh],
+    async () => (await axios.get(`https://localhost:44348/api/Book`)).data
+  );
+
+  // useEffect(() => {
+  //   console.log(temp);
+  // }, [temp.isSuccess]);
+
+  const addCartItem = async (bookId, quantity) => {
+    console.log(bookId, quantity);
+    let book = products.data.find((b) => b.id === bookId);
+    let total = book.price * quantity;
+    let token = sessionStorage.getItem("access_token");
+    let temp = jwt_decode(token);
+    let data = {
+      id_u: temp.id,
+      id_b: bookId,
+      amount: quantity,
+      total: total,
+      token: sessionStorage.getItem("access_token"),
+    };
+    axios
+      .post(`https://localhost:44348/api/Cart/addCart`, data, {
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      })
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((error) => console.log(error));
+  };
 
   return (
-    <main className={classes.content} >
+    <main className={classes.content}>
       <div className={classes.toolbar} />
       <Carousel fade infiniteLoop useKeyboardArrows autoPlay>
         <Carousel.Item>
@@ -79,26 +116,32 @@ const Products = ({ products, onAddToCart }) => {
           }
         />
       </div>
-
-      <Grid className={classes.content} container justify="center" spacing={5}>
-        {products
-          .filter((product) => {
-            if (searchTerm === "") {
-              return product;
-            } else if (
-              product.name
-                .toLowerCase()
-                .includes(searchTerm.toLocaleLowerCase())
-            ) {
-              return product;
-            }
-          })
-          .map((product) => (
-            <Grid item key={product.id} xs={12} sm={6} md={4} lg={3} id="pro">
-              <Product product={product} onAddToCart={onAddToCart} />
-            </Grid>
-          ))}
-      </Grid>
+      {products.isSuccess && (
+        <Grid
+          className={classes.content}
+          container
+          justify="center"
+          spacing={5}
+        >
+          {products.data
+            .filter((product) => {
+              if (searchTerm === "") {
+                return product;
+              } else if (
+                product.name
+                  .toLowerCase()
+                  .includes(searchTerm.toLocaleLowerCase())
+              ) {
+                return product;
+              }
+            })
+            .map((product) => (
+              <Grid item key={product.id} xs={12} sm={6} md={4} lg={3} id="pro">
+                <Product product={product} onAddToCart={addCartItem} />
+              </Grid>
+            ))}
+        </Grid>
+      )}
     </main>
   );
 };

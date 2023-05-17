@@ -53,4 +53,19 @@ export default makeStyles((theme) => ({
       width: "20ch",
     },
   },
+  dropdownContent: {
+    display: "grid",
+    position: "absolute",
+    backgroundColor: "#000",
+    width: "120px",
+    boxShadow: "0px 8px 16px 0px rgba(0,0,0,0.2)",
+    zIndex: 1,
+    right: "-19px",
+  },
+  checkoutButton: {
+    minWidth: "150px",
+    background: "#1C2331",
+    color: "white",
+    height: "40px",
+  },
 }));

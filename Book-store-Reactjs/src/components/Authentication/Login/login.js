@@ -47,11 +47,11 @@ export default function Login({ loginToken }) {
           sessionStorage.setItem("access_token", res.data.token);
           loginToken(res.data.token);
           toast.update(toastId.current, {
-            render: "Login sucess",
+            render: "Login success",
             type: "success",
             theme: "dark",
             hideProgressBar: false,
-            autoClose: 3000,
+            autoClose: 1500,
           });
           history("/");
         }
@@ -63,7 +63,7 @@ export default function Login({ loginToken }) {
           type: "error",
           theme: "dark",
           hideProgressBar: false,
-          autoClose: 3000,
+          autoClose: 1500,
         });
       });
   };
@@ -107,7 +107,7 @@ export default function Login({ loginToken }) {
             </button>
           </div>
           <p className="forgot-password text-right mt-2">
-            Forgot <a href="#">password?</a>
+            <a href="register">Create Account</a>
           </p>
         </div>
       </form>

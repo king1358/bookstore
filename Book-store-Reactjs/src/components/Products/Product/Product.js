@@ -12,6 +12,7 @@ import { AddShoppingCart } from "@material-ui/icons";
 import { Link } from "react-router-dom";
 import useStyles from "./styles";
 import { formatter } from "../../../lib/formatM";
+import { toast } from "react-toastify";
 const Product = ({ product, onAddToCart }) => {
   const classes = useStyles();
   return (
@@ -38,7 +39,18 @@ const Product = ({ product, onAddToCart }) => {
           variant="contained"
           className={classes.button}
           endIcon={<AddShoppingCart />}
-          onClick={() => onAddToCart(product.id, 1)}
+          onClick={() => {
+            let token = sessionStorage.getItem("access_token");
+            if (token) onAddToCart(product.id, 1);
+            else {
+              toast("Login to add item", {
+                type: "warning",
+                theme: "dark",
+                hideProgressBar: false,
+                autoClose: 1500,
+              });
+            }
+          }}
         >
           <b>ADD TO CART</b>
         </Button>

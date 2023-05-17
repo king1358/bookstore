@@ -7,7 +7,7 @@ import {
   Typography,
 } from "@material-ui/core";
 import { ShoppingCart } from "@material-ui/icons";
-import { AccountCircle } from "@material-ui/icons";
+import { AccountCircle, ExitToApp, Description } from "@material-ui/icons";
 import { Link, useLocation } from "react-router-dom";
 import logo from "../../assets/circles.png";
 import useStyles from "./styles";
@@ -18,7 +18,7 @@ const Navbar = ({ totalItems }) => {
   const classes = useStyles();
   const location = useLocation();
   const [decode, setDecode] = useState({ username: "", fullname: "" });
-
+  const [show, setShow] = useState(false);
   useEffect(() => {
     const token = sessionStorage.getItem("access_token");
     if (token != null) setDecode(jwt_decode(token));
@@ -50,7 +50,7 @@ const Navbar = ({ totalItems }) => {
           <div className={classes.button}>
             <IconButton
               component={Link}
-              to={`/cart/${decode.username}`}
+              to={`/cart`}
               aria-label="Show cart items"
               color="inherit"
             >
@@ -70,16 +70,49 @@ const Navbar = ({ totalItems }) => {
                 </Badge>
               </IconButton>
             ) : (
-              <IconButton
-                component={Link}
-                to="/"
-                aria-label="Show cart items"
-                color="inherit"
-              >
-                <Badge badgeContent={totalItems} color="secondary">
-                  <AccountCircle />
-                </Badge>
-              </IconButton>
+              <div style={{ position: "relative", display: "inline-block" }}>
+                <IconButton
+                  component={Link}
+                  aria-label="Show cart items"
+                  color="inherit"
+                  onClick={() => {
+                    setShow(!show);
+                  }}
+                  // onBlur={() => {
+                  //   setShow(false);
+                  // }}
+                >
+                  <Badge badgeContent={totalItems} color="secondary">
+                    <AccountCircle />
+                  </Badge>
+                </IconButton>
+                {show && (
+                  <div className={classes.dropdownContent}>
+                    <div style={{ marginTop: "15px" }}>
+                      <a style={{ display: "flex" }} href="/order">
+                        <Description />
+                        <p style={{ fontSize: "19px", marginLeft: "11px" }}>
+                          Order list
+                        </p>
+                      </a>
+                    </div>
+                    <div style={{ marginTop: "15px" }}>
+                      <a
+                        style={{ display: "flex" }}
+                        onClick={() => {
+                          sessionStorage.removeItem("access_token");
+                        }}
+                        href="/"
+                      >
+                        <ExitToApp />
+                        <p style={{ fontSize: "19px", marginLeft: "11px" }}>
+                          Sign out
+                        </p>
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </Toolbar>
