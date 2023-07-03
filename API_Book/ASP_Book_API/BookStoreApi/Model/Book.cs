@@ -2,12 +2,13 @@
 {
     public class Book
     {
-        public string? id { get; set; } = null;
-        public string? name { get; set; } = null;
-        public string? description { get; set; } = null;
-        public double? price { get; set; } = null;
-        public string? author { get; set; } = null;
-        public string? sourceimg { get; set; } = null;
+        public int id { get; set; }
+        public string name { get; set; }
+        public string description { get; set; }
+        public double price { get; set; }
+        public string author { get; set; }
+        public string img { get; set; }
+        public int stock { get; set; }
 
     }
 }

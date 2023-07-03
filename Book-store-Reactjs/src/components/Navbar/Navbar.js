@@ -13,14 +13,18 @@ import logo from "../../assets/circles.png";
 import useStyles from "./styles";
 import jwt_decode from "jwt-decode";
 import { useEffect } from "react";
+import Cookies from "universal-cookie";
 import { useState } from "react";
 const Navbar = ({ totalItems }) => {
   const classes = useStyles();
   const location = useLocation();
   const [decode, setDecode] = useState({ username: "", fullname: "" });
   const [show, setShow] = useState(false);
+  const cookies = new Cookies();
+
   useEffect(() => {
-    const token = sessionStorage.getItem("access_token");
+    const token = cookies.get("access_token");
+    // console.log("token", token);
     if (token != null) setDecode(jwt_decode(token));
     else decode.username = "";
   }, []);
@@ -58,7 +62,7 @@ const Navbar = ({ totalItems }) => {
                 <ShoppingCart />
               </Badge>
             </IconButton>
-            {!sessionStorage.getItem("access_token") ? (
+            {!cookies.get("access_token") ? (
               <IconButton
                 component={Link}
                 to="/login"
@@ -100,7 +104,7 @@ const Navbar = ({ totalItems }) => {
                       <a
                         style={{ display: "flex" }}
                         onClick={() => {
-                          sessionStorage.removeItem("access_token");
+                          cookies.remove("access_token");
                         }}
                         href="/"
                       >

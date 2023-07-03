@@ -1,7 +1,6 @@
 import React from "react";
 import { Container, Grid, Button, Typography } from "@material-ui/core";
 import { Link } from "react-router-dom";
-import { commerce } from "../../lib/commerce";
 import { useState, useEffect } from "react";
 import "./style.css";
 import axios from "axios";
@@ -15,19 +14,17 @@ const ProductView = () => {
   const [product, setProduct] = useState({});
 
   const fetchProduct = async (id) => {
-    axios
-      .get(`https://localhost:44348/api/Book/id?id=${id}`)
-      .then((res) => {
-        const { name, price, sourceimg, quantity, description } = res.data;
-        setProduct({
-          name,
-          quantity,
-          description,
-          src: sourceimg,
-          price: price,
-        });
-      })
-      .catch((error) => console.log(error));
+    axios.get(process.env.REACT_APP_API + `/Book/id?id=${id}`).then((res) => {
+      const { name, price, img, quantity, description } = res.data;
+      setProduct({
+        name,
+        quantity,
+        description,
+        src: img,
+        price: price,
+      });
+    });
+    // .catch((error) => console.log(error));
   };
 
   useEffect(() => {

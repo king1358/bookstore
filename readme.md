@@ -17,7 +17,12 @@ Project consists of 2 parts, front-end and back-end
 | Remove book from cart      | ✅  |
 | Login                      | ✅  |
 | Create account             | ✅  |
-| Check out                  | ❌  |
+| Check out                  | ✅  |
+| View Order                 | ✅  |
+
+# CHECKOUT
+
+- Using paypal account sandbox for testing.
 
 # BUILD AND RUN
 
@@ -25,6 +30,7 @@ Project consists of 2 parts, front-end and back-end
 
   - Require: SQL Server 16, Microsoft SQL Server Management Studio(or other tool can run file script)
   - Open file Script.sql and run
+  - Run file: province.sql,district.sql,ward.sql after run script.sql
   - Create user with username is sa2, password: svcntt and grant permission as dba on BOOKSTORE
 
 - Front-end:
@@ -38,3 +44,7 @@ Project consists of 2 parts, front-end and back-end
   - Require: .NET 6 or higher, Microsoft Visual Studio
   - Open file "ASP_Book_API.sln" in API_Book -> ASP_Book_API
   - Run(Debug) in IIS Express
+  - Appsetting:
+    - At ConnectionStrings -> database: change <your_server> to server name of database local.
+    - At GHN -> token and shopId: you follow the steps given at: https://api.ghn.vn/home/docs/detail
+    - At PayPal -> username and password: you follow the steps given at: https://developer.paypal.com/api/rest/authentication/

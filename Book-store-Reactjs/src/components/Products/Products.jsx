@@ -12,14 +12,16 @@ import { Link } from "react-router-dom";
 import { useQuery } from "react-query";
 import axios from "axios";
 import jwt_decode from "jwt-decode";
+import Cookies from "universal-cookie";
 
 const Products = () => {
   const classes = useStyles();
   const [refesh, setRefesh] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const cookies = new Cookies();
   const products = useQuery(
     ["products", refesh],
-    async () => (await axios.get(`https://localhost:44348/api/Book`)).data
+    async () => (await axios.get(process.env.REACT_APP_API + "/Book")).data
   );
 
   // useEffect(() => {
@@ -27,29 +29,31 @@ const Products = () => {
   // }, [temp.isSuccess]);
 
   const addCartItem = async (bookId, quantity) => {
-    console.log(bookId, quantity);
+    // console.log(bookId, quantity);
     let book = products.data.find((b) => b.id === bookId);
+    const cookies = new Cookies();
+
     let total = book.price * quantity;
-    let token = sessionStorage.getItem("access_token");
+    let token = cookies.get("access_token");
     let temp = jwt_decode(token);
     let data = {
-      id_u: temp.id,
-      id_b: bookId,
+      id_user: temp.id,
+      id_book: bookId,
       amount: quantity,
       total: total,
-      token: sessionStorage.getItem("access_token"),
+      token: token,
     };
     axios
-      .post(`https://localhost:44348/api/Cart/addCart`, data, {
+      .post(process.env.REACT_APP_API + `/Cart/addCart`, data, {
         headers: {
           "Content-Type": "application/json",
           "Access-Control-Allow-Origin": "*",
         },
       })
       .then((res) => {
-        console.log(res);
-      })
-      .catch((error) => console.log(error));
+        // console.log(res);
+      });
+    // .catch((error) => console.log(error));
   };
 
   return (

@@ -10,33 +10,41 @@ import {
 
 import useStyles from "./styles";
 import { formatter } from "../../../lib/formatM";
-const CartItem = ({ item, onUpdateCartQty, onRemoveFromCart }) => {
+const CartItem = ({
+  item,
+  onUpdateCartQty,
+  onRemoveFromCart,
+  setLoadButton,
+}) => {
   const classes = useStyles();
   const [amount, setAmount] = useState(item.amount);
   const [total, setTotal] = useState(item.total);
+  const [load, setLoad] = useState(false);
   const handleUpdateCartQty = (lineItemCart, lineItemId, newQuantity) => {
-    if (newQuantity != 0) {
+    if (newQuantity > 0) {
       setTotal(newQuantity * item.price);
+      setLoad(true);
+      setLoadButton(true);
       onUpdateCartQty(
         lineItemCart,
         lineItemId,
         newQuantity,
-        newQuantity * item.price
+        newQuantity * item.price,
+        setLoad
       );
-    } else onRemoveFromCart(lineItemCart, lineItemId);
+    } else {
+      setLoad(true);
+      handleRemoveFromCart(lineItemCart, lineItemId);
+    }
   };
-  const handleRemoveFromCart = (lineItemCart, lineItemId) =>
+  const handleRemoveFromCart = (lineItemCart, lineItemId) => {
+    setLoadButton(true);
     onRemoveFromCart(lineItemCart, lineItemId);
-
-  useEffect(() => {}, []);
+  };
 
   return (
     <Card className="cart-item">
-      <CardMedia
-        image={item.source}
-        alt={item.name}
-        className={classes.media}
-      />
+      <CardMedia image={item.img} alt={item.name} className={classes.media} />
       <CardContent className={classes.cardContent}>
         <Typography variant="h6">{item.name}</Typography>
         <Typography variant="h6" color="secondary">
@@ -49,10 +57,11 @@ const CartItem = ({ item, onUpdateCartQty, onRemoveFromCart }) => {
             type="button"
             size="small"
             onClick={() => {
-              handleUpdateCartQty(item.id_c, item.id_b, item.amount - 1);
+              handleUpdateCartQty(item.id_cart, item.id_book, item.amount - 1);
               setAmount(item.amount - 1);
               item.amount = item.amount - 1;
             }}
+            disabled={load}
           >
             -
           </Button>
@@ -61,10 +70,11 @@ const CartItem = ({ item, onUpdateCartQty, onRemoveFromCart }) => {
             type="button"
             size="small"
             onClick={() => {
-              handleUpdateCartQty(item.id_c, item.id_b, item.amount + 1);
+              handleUpdateCartQty(item.id_cart, item.id_book, item.amount + 1);
               setAmount(item.amount + 1);
               item.amount = item.amount + 1;
             }}
+            disabled={load}
           >
             +
           </Button>
@@ -74,7 +84,7 @@ const CartItem = ({ item, onUpdateCartQty, onRemoveFromCart }) => {
           variant="contained"
           type="button"
           color="secondary"
-          onClick={() => handleRemoveFromCart(item.id_c, item.id_b)}
+          onClick={() => handleRemoveFromCart(item.id_cart, item.id_book)}
         >
           Remove
         </Button>

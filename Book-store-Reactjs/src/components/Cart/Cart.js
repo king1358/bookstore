@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Container, Typography, Button, Grid } from "@material-ui/core";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import CartItem from "./CartItem/CartItem";
 import useStyles from "./styles";
@@ -8,34 +8,41 @@ import { useState } from "react";
 import { formatter } from "../../lib/formatM";
 import { useQuery } from "react-query";
 import jwt_decode from "jwt-decode";
+import Cookies from "universal-cookie";
 import axios from "axios";
-
-const Cart = ({ onEmptyCart }) => {
+const Cart = ({}) => {
   const classes = useStyles();
   const [listBook, setListBook] = useState([]);
-  const handleEmptyCart = () => onEmptyCart();
+  const cookies = new Cookies();
+
   const [total, setTotal] = useState(0);
   const [id_u, setId_u] = useState(
-    sessionStorage.getItem("access_token")
-      ? jwt_decode(sessionStorage.getItem("access_token")).id
-      : "NoneLogin"
+    cookies.get("access_token")
+      ? jwt_decode(cookies.get("access_token")).id
+      : -1
   );
-
+  const [token, setToken] = useState(
+    cookies.get("access_token") ? cookies.get("access_token") : -1
+  );
+  const linkTo = useNavigate();
+  const [loadButton, setLoadButton] = useState(false);
   const handleUpdateCartQty = async (
     lineItemIdCart,
     lineItemId,
     quantity,
-    total
+    total,
+    setLoad
   ) => {
     let data = {
-      id_c: lineItemIdCart,
-      id_b: lineItemId,
+      id_user: parseInt(id_u),
+      id_cart: lineItemIdCart,
+      id_book: lineItemId,
       amount: quantity,
       total: total,
-      token: sessionStorage.getItem("access_token"),
+      token: cookies.get("access_token"),
     };
     axios
-      .put(`https://localhost:44348/api/Cart/updateCart`, data, {
+      .put(process.env.REACT_APP_API + `/Cart/updateCart`, data, {
         headers: {
           "Content-Type": "application/json",
           "Access-Control-Allow-Origin": "*",
@@ -43,8 +50,10 @@ const Cart = ({ onEmptyCart }) => {
       })
       .then((res) => {
         setTotal(res.data.total);
-      })
-      .catch((error) => console.log(error));
+        setLoad(false);
+        setLoadButton(false);
+      });
+    // .catch((error) => console.log(error));
   };
 
   const onRemoveFromCart = (lineItemCart, lineItemId) => {
@@ -55,9 +64,10 @@ const Cart = ({ onEmptyCart }) => {
     // console.log(data);
     axios
       .delete(
-        `https://localhost:44348/api/Cart/RemoveItemCart?id_c=${lineItemCart}&id_b=${lineItemId}&token=${sessionStorage.getItem(
-          "access_token"
-        )}`,
+        process.env.REACT_APP_API +
+          `/Cart/removeItemCart?id_user=${id_u}&id_cart=${lineItemCart}&id_book=${lineItemId}&token=${cookies.get(
+            "access_token"
+          )}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -67,13 +77,14 @@ const Cart = ({ onEmptyCart }) => {
       )
       .then((res) => {
         setTotal(res.data.total);
+        setLoadButton(false);
         let temp = listBook.filter((obj) => {
-          return obj.id_b != lineItemId;
+          return obj.id_book != lineItemId;
         });
         setListBook(temp);
-        console.log("temp: ", temp);
-      })
-      .catch((error) => console.log(error));
+        // console.log("temp: ", temp);
+      });
+    // .catch((error) => console.log(error));
   };
 
   const renderEmptyCart = () => (
@@ -91,21 +102,30 @@ const Cart = ({ onEmptyCart }) => {
   const cart = useQuery(
     ["cart", refesh],
     async () =>
-      (await axios.get(`https://localhost:44348/api/Cart?id=${id_u}`)).data
+      (
+        await axios.get(
+          process.env.REACT_APP_API + `/Cart?id=${id_u}&token=${token}`
+        )
+      ).data,
+    {
+      refetchInterval: 360000,
+    }
   );
   const products = useQuery(
     ["products", refesh],
-    async () => (await axios.get(`https://localhost:44348/api/Book`)).data
+    async () => (await axios.get(process.env.REACT_APP_API + `/Book`)).data
   );
+
   const renderCart = () => (
     <>
       <Grid container spacing={4}>
         {listBook.map((lineItem) => (
-          <Grid item xs={12} sm={4} key={lineItem.id_b}>
+          <Grid item xs={12} sm={4} key={lineItem.id_book}>
             <CartItem
               item={lineItem}
               onUpdateCartQty={handleUpdateCartQty}
               onRemoveFromCart={onRemoveFromCart}
+              setLoadButton={setLoadButton}
             />
           </Grid>
         ))}
@@ -115,23 +135,24 @@ const Cart = ({ onEmptyCart }) => {
           Subtotal: <b>{formatter.format(total)}</b>
         </Typography>
         <div>
-          <Button
-            className={classes.emptyButton}
-            size="large"
-            type="button"
-            variant="contained"
-            color="secondary"
-            // onClick={handleEmptyCart}
-          >
-            Empty cart
-          </Button>
+          {/* <Button
+              className={classes.emptyButton}
+              size="large"
+              type="button"
+              variant="contained"
+              color="secondary"
+              // onClick={handleEmptyCart}
+            >
+              Empty cart
+            </Button> */}
           <Button
             className={classes.checkoutButton}
             component={Link}
-            to="/checkoutTemp"
+            to="/checkout"
             size="large"
             type="button"
             variant="contained"
+            disabled={loadButton}
           >
             Checkout
           </Button>
@@ -141,57 +162,53 @@ const Cart = ({ onEmptyCart }) => {
   );
 
   useEffect(() => {
-    console.log("cart", cart);
-    if (cart.data && products.data) {
-      console.log("propduct", products);
-      let t = [];
-      // console.log()
-      console.log("As212", products);
-      let data = cart.data;
-      console.log("dataCart: ", data);
-      data.cart.map((info, index) => {
-        console.log(info);
-        let temp = products.data.find((book) => book.id === info.id_b);
-        let temp2 = {
-          name: temp.name,
-          source: temp.sourceimg,
-          total: info.total,
-          amount: info.amount,
-          id_b: temp.id,
-          id_c: info.id_c,
-          price: temp.price,
+    // console.log("cart: ", cart.data);
+    // console.log("products: ", products.data);
+    let dataCart = cart.data;
+    let dataProducts = products.data;
+    if (dataCart && dataProducts) {
+      // console.log("Cart and product have data");
+      let tempData = [];
+      dataCart.cart.map((item) => {
+        let infoBook = dataProducts.find(
+          (product) => product.id === item.id_book
+        );
+        let infoItem = {
+          name: infoBook.name,
+          img: infoBook.img,
+          total: item.total,
+          amount: item.amount,
+          id_book: item.id_book,
+          id_cart: item.id_cart,
+          price: infoBook.price,
         };
-        let te = total + info.total;
-        setTotal(data.total);
-        t = [...t, temp2];
+        tempData = [...tempData, infoItem];
       });
-      setListBook(t);
-      // console.log(cart);
+      setTotal(dataCart.total);
+      setListBook(tempData);
+      // console.log(tempData);
     }
-    // console.log("AAAA", cart.data);
   }, [cart.data, products.data]);
 
   return (
     <Container>
       <div className={classes.toolbar} />
-      {id_u == "NoneLogin" && (
-        <Typography className={classes.title} variant="h5" gutterBottom>
-          <b>Login to use this</b>
-        </Typography>
-      )}
-      {cart.isSuccess == true && (
+      {id_u == -1 && linkTo("/login")}
+      {cart.isSuccess == true ? (
         <div>
           <Typography className={classes.title} variant="h5" gutterBottom>
             <b>Your Shopping Cart</b>
           </Typography>
           <hr />
-          {!listBook ? renderEmptyCart() : renderCart()}
+          {listBook.length === 0 ? renderEmptyCart() : renderCart()}
         </div>
-      )}
-      {cart.isError == true && (
-        <Typography className={classes.title} variant="h5" gutterBottom>
-          <b>Login to use this</b>
-        </Typography>
+      ) : (
+        <div>
+          <Typography className={classes.title} variant="h5" gutterBottom>
+            <b>Loading</b>
+          </Typography>
+          <hr />
+        </div>
       )}
     </Container>
   );

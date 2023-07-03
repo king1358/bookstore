@@ -2,22 +2,23 @@
 using Microsoft.AspNetCore.Mvc;
 using BookStoreApi.Service;
 using BookStoreApi.Model;
+using BookStoreApi.Interface;
 namespace BookStoreApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class BookController : ControllerBase
     {
-        private readonly IService _service;
-        public BookController(IService dbService) {
-            _service = dbService;
+        private readonly IBook _bookRepository;
+        public BookController(IBook bookRepository) {
+            _bookRepository = bookRepository;
         }
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             try
             {
-                List<Book> book = await _service.GetAll<Book>("SELECT * FROM BOOK",new {});
+                List<Book> book = await _bookRepository.GetAllBook();
                 return Ok(book);
 
             }catch(Exception ex)
@@ -26,11 +27,11 @@ namespace BookStoreApi.Controllers
             }
         }
         [HttpGet("id")]
-        public async Task<IActionResult> GetById(string id)
+        public async Task<IActionResult> GetById(int id)
         {
             try
             {
-                Book book = await _service.GetAsync<Book>("SELECT * FROM BOOK WHERE ID = @ID", new {  ID = id });
+                Book book = await _bookRepository.GetBook(id);
                 if (book == null) return Ok("Not Found");
                 return Ok(book);
             }catch(Exception ex)

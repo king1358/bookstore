@@ -8,16 +8,11 @@ import { useNavigate } from "react-router-dom";
 export default function Login({ loginToken }) {
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
-  const history = useNavigate();
+  const linkTo = useNavigate();
 
-  //   const cookies = new Cookies();
   const toastId = useRef(null);
 
   const handleSubmmit = async (e, user) => {
-    // console.log("click")
-    // console.log(userName)
-    // console.log(password)
-
     e.preventDefault();
     const form_data = new FormData();
     form_data.set("username", userName);
@@ -33,7 +28,7 @@ export default function Login({ loginToken }) {
     });
     await new Promise((resolve) => setTimeout(resolve, 1000));
     axios
-      .post(`https://localhost:44348/api/User/login`, form_data, {
+      .post(process.env.REACT_APP_API + "/User/login", form_data, {
         headers: {
           "Content-Type": "multipart/form-data",
           "Access-Control-Allow-Origin": "*",
@@ -41,10 +36,13 @@ export default function Login({ loginToken }) {
       })
       .then((res) => {
         // setProduct(res.data)
-        console.log(res.data);
+        // console.log(res.data);
         if (res.data.result === "Success") {
           //   cookies.set("access_token", res.data.token);
-          sessionStorage.setItem("access_token", res.data.token);
+          const d = new Date();
+          d.setTime(d.getTime() + 3 * 60 * 60 * 1000);
+          let expires = "expires=" + d.toUTCString();
+          document.cookie = `access_token=${res.data.token};${expires}`;
           loginToken(res.data.token);
           toast.update(toastId.current, {
             render: "Login success",
@@ -53,11 +51,11 @@ export default function Login({ loginToken }) {
             hideProgressBar: false,
             autoClose: 1500,
           });
-          history("/");
+          linkTo("/");
         }
       })
       .catch((error) => {
-        console.log("12", error);
+        // console.log("12", error);
         toast.update(toastId.current, {
           render: "Can't login",
           type: "error",

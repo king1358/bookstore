@@ -13,15 +13,19 @@ import { Link } from "react-router-dom";
 import useStyles from "./styles";
 import { formatter } from "../../../lib/formatM";
 import { toast } from "react-toastify";
+import Cookies from "universal-cookie";
+
 const Product = ({ product, onAddToCart }) => {
   const classes = useStyles();
+  const cookies = new Cookies();
+
   return (
     <Card className={classes.root}>
       <Link to={`product-view/${product.id}`}>
         <CardActionArea>
           <CardMedia
             className={classes.media}
-            image={product.sourceimg}
+            image={product.img}
             title={product.name}
           />
         </CardActionArea>
@@ -40,7 +44,7 @@ const Product = ({ product, onAddToCart }) => {
           className={classes.button}
           endIcon={<AddShoppingCart />}
           onClick={() => {
-            let token = sessionStorage.getItem("access_token");
+            let token = cookies.get("access_token");
             if (token) onAddToCart(product.id, 1);
             else {
               toast("Login to add item", {
